@@ -30,9 +30,11 @@ clean:
 	for d in $(SUBDIRS); do $(MAKE) -C $$d clean; done
 	$(MAKE) -C runc clean
 	rm -f *stamp
+	$(MAKE) -C image-builder clean-in-docker
 
 distclean: clean
 	docker rmi runc-builder:latest
+	$(MAKE) -C image-builder distclean
 
 deps:
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(GOPATH)/bin v1.12.3
@@ -62,7 +64,14 @@ runc/runc: runc-builder-stamp
 		runc-builder:latest \
 		make runc
 
+image: runc/runc agent
+	mkdir -p image-builder/files_ephemeral/usr/local/bin
+	cp runc/runc image-builder/files_ephemeral/usr/local/bin
+	cp agent/agent image-builder/files_ephemeral/usr/local/bin
+	touch image-builder/files_ephemeral
+	$(MAKE) -C image-builder all-in-docker
+
 install:
 	for d in $(SUBDIRS); do $(MAKE) -C $$d install; done
 
-.PHONY: all $(SUBDIRS) clean proto deps lint install runc-builder runc
+.PHONY: all $(SUBDIRS) image clean proto deps lint install runc-builder runc

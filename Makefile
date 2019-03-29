@@ -16,6 +16,7 @@ export INSTALLROOT?=/usr/local
 export STATIC_AGENT
 
 GOPATH:=$(shell go env GOPATH)
+UID:=$(shell id -u)
 
 all: $(SUBDIRS)
 
@@ -27,6 +28,11 @@ proto:
 
 clean:
 	for d in $(SUBDIRS); do $(MAKE) -C $$d clean; done
+	$(MAKE) -C runc clean
+	rm -f *stamp
+
+distclean: clean
+	docker rmi runc-builder:latest
 
 deps:
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(GOPATH)/bin v1.12.3
@@ -38,7 +44,25 @@ lint:
 	git-validation -run DCO,dangling-whitespace,short-subject -range HEAD~20..HEAD
 	golangci-lint run
 
+runc-builder: runc-builder-stamp
+
+runc-builder-stamp: tools/docker/Dockerfile.runc-builder
+	cd tools/docker && docker build -t runc-builder:latest -f Dockerfile.runc-builder .
+	touch $@
+
+runc: runc/runc
+
+runc/runc: runc-builder-stamp
+	docker run --rm -it --user $(UID) \
+		--volume $(PWD)/runc:/gopath/src/github.com/opencontainers/runc \
+		--volume $(PWD)/deps:/target \
+		-e HOME=/tmp \
+		-e GOPATH=/gopath \
+		--workdir /gopath/src/github.com/opencontainers/runc \
+		runc-builder:latest \
+		make runc
+
 install:
 	for d in $(SUBDIRS); do $(MAKE) -C $$d install; done
 
-.PHONY: all $(SUBDIRS) clean proto deps lint install
+.PHONY: all $(SUBDIRS) clean proto deps lint install runc-builder runc

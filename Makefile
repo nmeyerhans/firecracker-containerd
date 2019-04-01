@@ -42,7 +42,7 @@ deps:
 	GO111MODULE=off go get -u github.com/kunalkushwaha/ltag
 
 lint:
-	ltag -t ./.headers -excludes runc -check -v
+	ltag -t ./.headers -excludes "image-builder runc" -check -v
 	git-validation -run DCO,dangling-whitespace,short-subject -range HEAD~20..HEAD
 	golangci-lint run
 

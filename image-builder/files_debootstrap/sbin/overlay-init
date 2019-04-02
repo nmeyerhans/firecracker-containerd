@@ -30,7 +30,8 @@ pivot() {
 
 # Overlay is configured under /overlay
 # Global variable $overlay_root is expected to be set to either:
-# ""/"ram" -- Use a tmpfs as the rw overlay layer
+# "ram", which configures a tmpfs as the rw overlay layer (this is
+# the default, if the variable is unset)
 # - or -
 # A block device name, relative to /dev, in which case it is assumed
 # to contain an ext4 filesystem suitable for use as a rw overlay

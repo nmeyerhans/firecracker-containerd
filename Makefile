@@ -42,11 +42,13 @@ clean:
 	for d in $(SUBDIRS); do $(MAKE) -C $$d clean; done
 	- rm -rf $(BINPATH)/
 	$(MAKE) -C $(RUNC_DIR) clean
-	rm -f *stamp
 	$(MAKE) -C tools/image-builder clean-in-docker
 
 distclean: clean
-	docker rmi localhost/runc-builder:latest
+	rm -f *stamp
+	- docker rmi localhost/firecracker-containerd-naive-integ-test:$(DOCKER_IMAGE_TAG)
+	- docker rmi localhost/firecracker-containerd-test:$(DOCKER_IMAGE_TAG)
+	- docker rmi localhost/runc-builder:$(DOCKER_IMAGE_TAG)
 	$(MAKE) -C tools/image-builder distclean
 
 lint:
@@ -113,7 +115,9 @@ image: $(RUNC_BIN) agent
 install:
 	for d in $(SUBDIRS); do $(MAKE) -C $$d install; done
 
-test-images: | image firecracker-containerd-naive-integ-test-image firecracker-containerd-test-image
+test-images: test-images-stamp
+
+test-images-stamp: | image firecracker-containerd-naive-integ-test-image firecracker-containerd-test-image
 
 firecracker-containerd-test-image: $(RUNC_BIN)
 	DOCKER_BUILDKIT=1 docker build \

@@ -115,38 +115,6 @@ RUN --mount=type=cache,from=build-base,source=/home/builder/go/pkg/mod,target=/h
 
 
 
-
-#########################################
-#
-# VM IMAGES
-#
-#########################################
-
-# Build a rootfs for the microVM, including runc and firecracker-containerd's agent
-FROM alpine:3.8 as firecracker-vm-root
-COPY _submodules/runc/runc /usr/local/bin
-COPY --from=firecracker-containerd-build /output/agent /usr/local/bin/
-ADD tools/docker/fc-agent.start /etc/local.d/fc-agent.start
-RUN mkdir -p /var/firecracker-containerd-test/scripts/
-ADD tools/docker/scripts/*  /var/firecracker-containerd-test/scripts/
-RUN apk add openrc \
-	&& ln -s /etc/init.d/local /etc/runlevels/default/local \
-	&& ln -s /etc/init.d/cgroups /etc/runlevels/default/cgroups \
-	&& ln -s /etc/init.d/devfs /etc/runlevels/boot/devfs \
-	&& ln -s /etc/init.d/hostname /etc/runlevels/boot/hostname \
-	&& ln -s /etc/init.d/procfs /etc/runlevels/boot/procfs \
-	&& ln -s /etc/init.d/sysfs /etc/runlevels/boot/sysfs
-
-# Convert the VM rootfs into an ext4 file. This step must run as root.
-FROM debian:stretch as firecracker-vm-root-builder
-COPY --from=firecracker-vm-root / /vm
-RUN mkdir -p /output \
-	&& cd /output \
-	&& mkfs.ext4 -d /vm vm.ext4 65536
-
-
-
-
 #########################################
 #
 # TEST IMAGES
@@ -181,7 +149,7 @@ RUN mkdir -p /var/lib/firecracker-containerd/runtime \
 
 COPY --from=firecracker-containerd-build /home/builder/firecracker-containerd /firecracker-containerd
 COPY --from=firecracker-build /output/* /usr/local/bin/
-COPY --from=firecracker-vm-root-builder /output/vm.ext4 /var/lib/firecracker-containerd/runtime/default-rootfs.img
+COPY tools/image-builder/rootfs.img /var/lib/firecracker-containerd/runtime/default-rootfs.img
 COPY --from=firecracker-containerd-build /output/* /usr/local/bin/
 COPY _submodules/runc/runc /usr/local/bin
 COPY tools/docker/firecracker-runtime.json /etc/containerd/firecracker-runtime.json

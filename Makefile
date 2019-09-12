@@ -60,6 +60,9 @@ distclean: clean
 	$(call rmi-if-exists,localhost/$(RUNC_BUILDER_NAME):$(DOCKER_IMAGE_TAG))
 	$(call rmi-if-exists,localhost/$(FIRECRACKER_BUILDER_NAME):$(DOCKER_IMAGE_TAG))
 	docker volume rm -f $(CARGO_CACHE_VOLUME_NAME)
+	$(call rmi-if-exists,localhost/firecracker-containerd-naive-integ-test:$(DOCKER_IMAGE_TAG))
+	$(call rmi-if-exists,localhost/firecracker-containerd-test:$(DOCKER_IMAGE_TAG))
+	rm -f *stamp
 	$(MAKE) -C tools/image-builder distclean
 
 lint:
@@ -105,7 +108,9 @@ image: $(RUNC_BIN) agent
 	touch tools/image-builder/files_ephemeral
 	$(MAKE) -C tools/image-builder all-in-docker
 
-test-images: | image firecracker-containerd-naive-integ-test-image firecracker-containerd-test-image
+test-images: test-images-stamp
+
+test-images-stamp: | image firecracker-containerd-naive-integ-test-image firecracker-containerd-test-image
 
 firecracker-containerd-test-image:
 	DOCKER_BUILDKIT=1 docker build \

@@ -99,12 +99,13 @@ $(INTEG_TEST_SUBDIRS): test-images
 
 image: $(RUNC_BIN) agent
 	mkdir -p tools/image-builder/files_ephemeral/usr/local/bin
+	mkdir -p tools/image-builder/files_ephemeral/var/firecracker-containerd-test/scripts
 	cp $(RUNC_BIN) tools/image-builder/files_ephemeral/usr/local/bin
 	cp agent/agent tools/image-builder/files_ephemeral/usr/local/bin
 	touch tools/image-builder/files_ephemeral
 	$(MAKE) -C tools/image-builder all-in-docker
 
-test-images: | firecracker-containerd-naive-integ-test-image firecracker-containerd-test-image
+test-images: | image firecracker-containerd-naive-integ-test-image firecracker-containerd-test-image
 
 firecracker-containerd-test-image:
 	DOCKER_BUILDKIT=1 docker build \

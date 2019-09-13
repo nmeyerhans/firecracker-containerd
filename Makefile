@@ -46,10 +46,11 @@ clean:
 
 distclean: clean
 	rm -f *stamp
+	for d in $(SUBDIRS); do $(MAKE) -C $$d distclean; done
+	$(MAKE) -C tools/image-builder distclean
 	- docker rmi localhost/firecracker-containerd-naive-integ-test:$(DOCKER_IMAGE_TAG)
 	- docker rmi localhost/firecracker-containerd-test:$(DOCKER_IMAGE_TAG)
 	- docker rmi localhost/runc-builder:$(DOCKER_IMAGE_TAG)
-	$(MAKE) -C tools/image-builder distclean
 
 lint:
 	$(BINPATH)/ltag -t ./.headers -excludes "tools $(SUBMODULES)" -check -v

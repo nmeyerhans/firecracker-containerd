@@ -57,13 +57,14 @@ clean:
 
 rmi-if-exists = $(if $(shell docker images -q $(1)),docker rmi $(1),true)
 distclean: clean
+	for d in $(SUBDIRS); do $(MAKE) -C $$d distclean; done
+	$(MAKE) -C tools/image-builder distclean
 	$(call rmi-if-exists,localhost/$(RUNC_BUILDER_NAME):$(DOCKER_IMAGE_TAG))
 	$(call rmi-if-exists,localhost/$(FIRECRACKER_BUILDER_NAME):$(DOCKER_IMAGE_TAG))
 	docker volume rm -f $(CARGO_CACHE_VOLUME_NAME)
 	$(call rmi-if-exists,localhost/firecracker-containerd-naive-integ-test:$(DOCKER_IMAGE_TAG))
 	$(call rmi-if-exists,localhost/firecracker-containerd-test:$(DOCKER_IMAGE_TAG))
 	rm -f *stamp
-	$(MAKE) -C tools/image-builder distclean
 
 lint:
 	$(BINPATH)/ltag -t ./.headers -excludes "tools $(SUBMODULES)" -check -v

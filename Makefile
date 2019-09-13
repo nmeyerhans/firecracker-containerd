@@ -108,6 +108,7 @@ $(RUNC_BIN): $(RUNC_DIR)/VERSION runc-builder-stamp
 image: $(RUNC_BIN) agent
 	mkdir -p tools/image-builder/files_ephemeral/usr/local/bin
 	mkdir -p tools/image-builder/files_ephemeral/var/firecracker-containerd-test/scripts
+	for f in tools/docker/scripts/*; do test -f $$f && install -m 755 $$f tools/image-builder/files_ephemeral/var/firecracker-containerd-test/scripts; done
 	cp $(RUNC_BIN) tools/image-builder/files_ephemeral/usr/local/bin
 	cp agent/agent tools/image-builder/files_ephemeral/usr/local/bin
 	touch tools/image-builder/files_ephemeral

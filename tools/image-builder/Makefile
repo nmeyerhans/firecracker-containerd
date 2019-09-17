@@ -56,6 +56,7 @@ endif
 		--include=udev,systemd,systemd-sysv,procps,libseccomp2 \
 		stretch \
 		"$(WORKDIR)" $(DEBMIRROR)
+	touch "$(WORKDIR)/etc/hosts"
 	rm -rf "$(WORKDIR)/var/cache/apt/archives" \
 	       "$(WORKDIR)/usr/share/doc" \
 	       "$(WORKDIR)/var/lib/apt/lists"

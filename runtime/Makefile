@@ -67,6 +67,6 @@ distclean: clean
 	    test -d $(CURDIR)/logs; } && \
 		docker run --rm --volume $(CURDIR):/mnt \
 		localhost/firecracker-containerd-naive-integ-test:$(DOCKER_IMAGE_TAG) \
-		rm -rf /mnt/logs /mnt/gocache
+		"rm -rf /mnt/logs /mnt/gocache"
 
 .PHONY: all runtime clean distclean install test integ-test

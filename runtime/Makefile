@@ -41,7 +41,6 @@ test:
 
 integ-test:
 	mkdir -p $(CURDIR)/logs
-	mkdir -p $(CURDIR)/gocache
 
 	$(foreach TESTNAME,$(INTEG_TESTNAMES),\
 		docker run --rm -it \
@@ -51,7 +50,6 @@ integ-test:
 			--volume /sys:/sys \
 			--volume /run/udev/control:/run/udev/control \
 			--volume $(CURDIR)/logs:/var/log/firecracker-containerd-test \
-			--volume $(CURDIR)/gocache:/root/.cache \
 			--env ENABLE_ISOLATED_TESTS=1 \
 			--workdir="/firecracker-containerd/runtime" \
 			--init \
@@ -63,10 +61,6 @@ clean:
 	- rm -f containerd-shim-aws-firecracker
 
 distclean: clean
-	- { test -d $(CURDIR)/gocache || \
-	    test -d $(CURDIR)/logs; } && \
-		docker run --rm --volume $(CURDIR):/mnt \
-		localhost/firecracker-containerd-naive-integ-test:$(DOCKER_IMAGE_TAG) \
-		"rm -rf /mnt/logs /mnt/gocache"
+	- rm -rf logs
 
 .PHONY: all runtime clean distclean install test integ-test
